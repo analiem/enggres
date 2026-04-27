@@ -177,6 +177,7 @@ a{color:var(--accent)}
 <div class="topbar">
   <div class="logo">🦕 Dinodino Tufel <span>🇬🇧</span></div>
   <div class="topbar-right">
+    <button class="icon-btn" onclick="goHome()" title="Beranda">🏠</button>
     <button class="icon-btn" onclick="toggleTheme()" id="theme-icon" title="Toggle dark mode">☀️</button>
     <button class="icon-btn" onclick="openDrawer()" title="Settings">⚙️</button>
   </div>
@@ -431,7 +432,17 @@ async function startQuiz(){
   showScreen('loading-screen');
   questions=[]; currentQ=0; answers=[];
   try{
+    const sectionInstructions = {
+      'Error Recognition': `For Error Recognition questions: write a sentence with exactly 4 underlined parts labeled (A), (B), (C), (D) in the question field like: "She (A) go to (B) the market (C) every (D) day." — one part contains a grammatical error. The options must be exactly: ["A", "B", "C", "D"]. The answer is the index of the letter containing the error.`,
+      'Grammar': `For Grammar questions: provide a sentence with a blank and 4 options to fill it correctly.`,
+      'Grammar & Vocabulary': `For Grammar & Vocabulary questions: mix sentence completion and vocabulary-in-context questions.`,
+      'Incomplete Sentences': `For Incomplete Sentences: provide a sentence with a blank and 4 options.`,
+    };
+    const extraInstruction = sectionInstructions[selectedSection] || '';
+
     const prompt=`You are a ${selectedTest} exam expert. Generate exactly ${questionCount} multiple-choice practice questions for the "${selectedSection}" section of the ${selectedTest} exam.
+
+${extraInstruction}
 
 Return ONLY a valid JSON array, no markdown, no preamble. Format:
 [{"section":"${selectedSection}","passage":"short reading/dialogue text if needed, else empty string","question":"the question text","options":["A. ...","B. ...","C. ...","D. ..."],"answer":0,"explanation":"penjelasan singkat dalam Bahasa Indonesia mengapa jawaban tersebut benar"}]
@@ -472,8 +483,18 @@ function renderQuestion(){
   else{pass.style.display='none';}
   document.getElementById('q-text').textContent=q.question;
   document.getElementById('explanation').style.display='none';
+  const isErrRec = q.section==='Error Recognition';
   const opts=document.getElementById('opts');
-  opts.innerHTML=q.options.map((o,i)=>`<button class="opt" onclick="pickAnswer(${i},this)">${o}</button>`).join('');
+  if(isErrRec){
+    // Show A B C D as 2x2 grid buttons
+    opts.style.display='grid';
+    opts.style.gridTemplateColumns='1fr 1fr';
+    opts.innerHTML=q.options.map((o,i)=>`<button class="opt" style="justify-content:center;font-size:16px;font-weight:500;" onclick="pickAnswer(${i},this)">${o}</button>`).join('');
+  } else {
+    opts.style.display='flex';
+    opts.style.gridTemplateColumns='';
+    opts.innerHTML=q.options.map((o,i)=>`<button class="opt" onclick="pickAnswer(${i},this)">${o}</button>`).join('');
+  }
   const nb=document.getElementById('next-btn');
   nb.disabled=true; nb.textContent='Jawab dulu untuk lanjut';
 }
