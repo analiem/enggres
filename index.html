@@ -6,7 +6,7 @@
 <title>TOEFL & TOEIC Practice — Dinodino Learn</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;1,7..72,300&family=Syne:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&family=Outfit:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Figtree:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;1,7..72,300&family=Syne:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&family=Outfit:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Figtree:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Nunito:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@300;400;500&family=Source+Sans+3:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 :root {
   --bg: #f8f7f4;
@@ -175,7 +175,7 @@ a{color:var(--accent)}
 
 <!-- Topbar -->
 <div class="topbar">
-  <div class="logo">TOEFL &amp; TOEIC <span>Practice</span></div>
+  <div class="logo">🦕 Dinodino Tufel <span>🇬🇧</span></div>
   <div class="topbar-right">
     <button class="icon-btn" onclick="toggleTheme()" id="theme-icon" title="Toggle dark mode">☀️</button>
     <button class="icon-btn" onclick="openDrawer()" title="Settings">⚙️</button>
@@ -220,10 +220,7 @@ a{color:var(--accent)}
 
   <!-- Home Screen -->
   <div class="screen active" id="home-screen">
-    <div class="hero">
-      <h1 class="hero-title">Latihan TOEFL<br/>&amp; TOEIC</h1>
-      <p class="hero-sub">Soal dibuat otomatis oleh AI setiap sesi — selalu baru</p>
-    </div>
+    <div style="height:1rem"></div>
 
     <div id="api-warn" class="api-warn">
       ⚠️ Groq API Key belum diset. Buka Settings (⚙️) untuk memasukkan API key gratis dari Groq — tidak perlu kartu kredit!
@@ -312,8 +309,12 @@ const FONTS = [
   {name:'Outfit',display:'Outfit',family:"'Outfit', sans-serif",display_family:"'Playfair Display', serif",desc:'Geometric · Friendly'},
   {name:'Figtree',display:'Figtree',family:"'Figtree', sans-serif",display_family:"'DM Serif Display', serif",desc:'Rounded · Soft'},
   {name:'Plus Jakarta',display:'Plus Jakarta',family:"'Plus Jakarta Sans', sans-serif",display_family:"'Fraunces', serif",desc:'Elegant · Balanced'},
-  {name:'IBM Plex Mono',display:'IBM Mono',family:"'IBM Plex Mono', monospace",display_family:"'Syne', sans-serif",desc:'Mono · Techy'},
+  {name:'IBM Mono',display:'IBM Mono',family:"'IBM Plex Mono', monospace",display_family:"'Syne', sans-serif",desc:'Mono · Techy'},
   {name:'Literata',display:'Literata',family:"'Literata', serif",display_family:"'Syne', sans-serif",desc:'Editorial · Reading'},
+  {name:'Nunito',display:'Nunito',family:"'Nunito', sans-serif",display_family:"'Playfair Display', serif",desc:'Bubbly · Friendly'},
+  {name:'Lora',display:'Lora',family:"'Lora', serif",display_family:"'Syne', sans-serif",desc:'Classic · Serif'},
+  {name:'Poppins',display:'Poppins',family:"'Poppins', sans-serif",display_family:"'DM Serif Display', serif",desc:'Popular · Versatile'},
+  {name:'Source Sans',display:'Source Sans',family:"'Source Sans 3', sans-serif",display_family:"'Fraunces', serif",desc:'Neutral · Readable'},
 ];
 let currentFont = 0;
 
@@ -433,9 +434,9 @@ async function startQuiz(){
     const prompt=`You are a ${selectedTest} exam expert. Generate exactly ${questionCount} multiple-choice practice questions for the "${selectedSection}" section of the ${selectedTest} exam.
 
 Return ONLY a valid JSON array, no markdown, no preamble. Format:
-[{"section":"${selectedSection}","passage":"short reading/dialogue text if needed, else empty string","question":"the question text","options":["A. ...","B. ...","C. ...","D. ..."],"answer":0,"explanation":"brief explanation of the correct answer"}]
+[{"section":"${selectedSection}","passage":"short reading/dialogue text if needed, else empty string","question":"the question text","options":["A. ...","B. ...","C. ...","D. ..."],"answer":0,"explanation":"penjelasan singkat dalam Bahasa Indonesia mengapa jawaban tersebut benar"}]
 
-Rules: answer is the 0-based index of the correct option. For reading/listening include a 3-5 sentence passage/dialogue. For grammar/vocabulary passage can be empty. Authentic ${selectedTest} difficulty. All text in English. Return ONLY the JSON array.`;
+Rules: answer is the 0-based index of the correct option. For reading/listening include a 3-5 sentence passage/dialogue. For grammar/vocabulary passage can be empty. Authentic ${selectedTest} difficulty. Questions and options in English, explanation in Bahasa Indonesia. Return ONLY the JSON array.`;
 
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
@@ -557,10 +558,13 @@ function goHome(){clearInterval(timerInt);showScreen('home-screen');}
 })();
 </script>
 <footer style="text-align:center;padding:2rem 1.5rem 1.5rem;border-top:1px solid var(--border);margin-top:2rem">
-  <p style="font-size:12px;color:var(--text3);letter-spacing:.02em">
-    <span style="font-family:var(--font-display);font-size:13px;color:var(--text2)">Dinodino Studio</span>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:6px">
+    <a href="https://dinodinostudio.vercel.app/" target="_blank" style="font-family:var(--font-display);color:var(--text2);text-decoration:none;transition:color var(--transition)" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'">Dinodino Studio</a>
     <span style="margin:0 8px;color:var(--border2)">×</span>
-    <span style="font-family:var(--font-display);font-size:13px;color:var(--text2)">Dinodino Learn</span>
+    <a href="https://dinodinolearn.vercel.app/" target="_blank" style="font-family:var(--font-display);color:var(--text2);text-decoration:none;transition:color var(--transition)" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'">Dinodino Learn</a>
+  </p>
+  <p style="font-size:11px;color:var(--text3);letter-spacing:.04em">
+    Part of <a href="https://dinodino.vercel.app/" target="_blank" style="color:var(--text3);text-decoration:none;font-weight:500;letter-spacing:.06em;transition:color var(--transition)" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'">DINODINO UNIVERSE</a> · 2026
   </p>
 </footer>
 </body>
