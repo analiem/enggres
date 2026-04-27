@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TOEFL & TOEIC Practice — Dinodino Learn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;1,7..72,300&family=Syne:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&family=Outfit:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Figtree:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f8f7f4;
+  --bg2: #f0ede8;
+  --bg3: #e8e4de;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.1);
+  --border2: rgba(0,0,0,0.18);
+  --text: #1a1916;
+  --text2: #6b6760;
+  --text3: #9e9b96;
+  --accent: #1a56db;
+  --accent-bg: #eff4ff;
+  --accent-text: #1a56db;
+  --success: #0f6e56;
+  --success-bg: #e1f5ee;
+  --danger: #a32d2d;
+  --danger-bg: #fcebeb;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'DM Serif Display', serif;
+  --transition: .2s ease;
+}
+[data-theme="dark"] {
+  --bg: #0f0f0d;
+  --bg2: #1a1916;
+  --bg3: #232320;
+  --surface: #1a1916;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0ede8;
+  --text2: #9e9b96;
+  --text3: #6b6760;
+  --accent: #5b8dee;
+  --accent-bg: #1a2340;
+  --accent-text: #91b4f7;
+  --success: #1d9e75;
+  --success-bg: #0a2a1e;
+  --danger: #d85a5a;
+  --danger-bg: #2a0f0f;
+}
+*{box-sizing:border-box;margin:0;padding:0;transition:background-color var(--transition),border-color var(--transition),color var(--transition)}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.6}
+a{color:var(--accent)}
+
+/* Layout */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px)}
+.logo{font-family:var(--font-display);font-size:18px;color:var(--text);letter-spacing:-.01em}
+.logo span{color:var(--accent)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.icon-btn{width:34px;height:34px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:15px;transition:all var(--transition)}
+.icon-btn:hover{border-color:var(--border2);color:var(--text)}
+
+.container{max-width:680px;margin:0 auto;padding:80px 1.5rem 3rem}
+
+/* Screens */
+.screen{display:none}
+.screen.active{display:block}
+
+/* Settings drawer */
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;backdrop-filter:blur(2px)}
+.drawer-backdrop.open{display:block}
+.drawer{position:fixed;top:0;right:-380px;width:360px;max-width:100vw;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:201;transition:right .25s ease;overflow-y:auto;padding:1.5rem}
+.drawer.open{right:0}
+.drawer-title{font-family:var(--font-display);font-size:20px;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center}
+.close-btn{background:none;border:none;cursor:pointer;color:var(--text2);font-size:20px;line-height:1;padding:4px}
+.close-btn:hover{color:var(--text)}
+.setting-group{margin-bottom:1.5rem}
+.setting-label{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:10px}
+.font-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.font-card{padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border);cursor:pointer;transition:all var(--transition);background:var(--bg2)}
+.font-card:hover{border-color:var(--border2)}
+.font-card.active{border-color:var(--accent);background:var(--accent-bg)}
+.font-card .fn{font-size:16px;font-weight:500;color:var(--text);margin-bottom:2px}
+.font-card .fd{font-size:11px;color:var(--text3)}
+.theme-row{display:flex;gap:8px}
+.theme-btn{flex:1;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg2);cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all var(--transition)}
+.theme-btn.active{border-color:var(--accent);background:var(--accent-bg);color:var(--accent-text)}
+
+/* API key field */
+.api-field{display:flex;gap:8px}
+.api-field input{flex:1;padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--font-body);font-size:13px;outline:none}
+.api-field input:focus{border-color:var(--accent)}
+.api-field button{padding:9px 14px;border-radius:var(--radius-sm);border:1px solid var(--accent);background:var(--accent-bg);color:var(--accent-text);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}
+.api-note{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
+.api-status{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ccc;margin-right:6px;vertical-align:middle}
+.api-status.ok{background:var(--success)}
+
+/* Home */
+.hero{margin-bottom:2rem}
+.hero-title{font-family:var(--font-display);font-size:36px;line-height:1.2;letter-spacing:-.02em;margin-bottom:.5rem}
+.hero-sub{font-size:14px;color:var(--text2)}
+.section-title{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem}
+.test-card{padding:1.25rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all var(--transition)}
+.test-card:hover{border-color:var(--border2);background:var(--bg2)}
+.test-card.selected{border-color:var(--accent);background:var(--accent-bg)}
+.test-card .tc-name{font-family:var(--font-display);font-size:20px;color:var(--text);margin-bottom:4px}
+.test-card .tc-desc{font-size:12px;color:var(--text2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.5rem}
+.chip{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer;color:var(--text2);transition:all var(--transition)}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.selected{background:var(--accent);border-color:var(--accent);color:#fff}
+.count-row{display:flex;gap:8px;margin-bottom:2rem}
+.start-btn{width:100%;padding:14px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all var(--transition);letter-spacing:.01em}
+.start-btn:hover{opacity:.9;transform:translateY(-1px)}
+.start-btn:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;transform:none}
+.api-warn{padding:12px 14px;border-radius:var(--radius-sm);border:1px solid rgba(168,85,20,.3);background:rgba(168,85,20,.08);font-size:13px;color:#a85514;margin-bottom:1.5rem;display:none}
+[data-theme="dark"] .api-warn{color:#f0a060;border-color:rgba(240,160,96,.2);background:rgba(240,160,96,.07)}
+
+/* Loading */
+.loading-wrap{padding:4rem 0;text-align:center}
+.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--text2);margin-bottom:4px}
+.loading-sub{font-size:12px;color:var(--text3)}
+
+/* Quiz */
+.quiz-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.q-num{font-size:13px;color:var(--text2)}
+.timer-pill{font-size:13px;font-weight:500;color:var(--text);background:var(--bg2);border:1px solid var(--border);padding:4px 14px;border-radius:20px}
+.timer-pill.urgent{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
+.progress{height:3px;background:var(--bg3);border-radius:2px;margin-bottom:1.5rem;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease}
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem}
+.q-tag{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-text);margin-bottom:10px}
+.passage{font-size:13px;color:var(--text2);line-height:1.75;background:var(--bg2);border-left:2.5px solid var(--accent);padding:.875rem 1rem;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:1rem;font-style:italic}
+.q-text{font-size:15px;color:var(--text);line-height:1.7;margin-bottom:1.25rem}
+.opts{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem}
+.opt{padding:11px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);font-size:14px;cursor:pointer;text-align:left;color:var(--text);background:var(--bg2);transition:all var(--transition);display:flex;gap:10px;align-items:flex-start;font-family:var(--font-body);line-height:1.5}
+.opt:hover:not(:disabled){border-color:var(--border2);background:var(--bg3)}
+.opt.selected-opt{border-color:var(--accent);background:var(--accent-bg);color:var(--accent-text)}
+.opt.correct{border-color:var(--success);background:var(--success-bg);color:var(--success)}
+.opt.wrong{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.opt:disabled{cursor:default}
+.opt-ltr{font-weight:500;flex-shrink:0;min-width:20px}
+.explanation{font-size:13px;color:var(--text2);line-height:1.65;padding:.875rem 1rem;background:var(--bg2);border-radius:var(--radius-sm);margin-bottom:1.25rem;display:none}
+.explanation strong{color:var(--text)}
+.next-btn{width:100%;padding:11px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all var(--transition)}
+.next-btn:hover:not(:disabled){background:var(--bg2);border-color:var(--accent);color:var(--accent-text)}
+.next-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Results */
+.result-hero{text-align:center;padding:1.5rem 0 2rem}
+.result-test{font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:.5rem}
+.result-score{font-family:var(--font-display);font-size:72px;line-height:1;color:var(--text);margin-bottom:4px}
+.result-label{font-size:14px;color:var(--text2)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
+.stat-box{background:var(--bg2);border-radius:var(--radius-sm);padding:1rem;text-align:center}
+.stat-n{font-family:var(--font-display);font-size:28px;color:var(--text)}
+.stat-l{font-size:12px;color:var(--text3);margin-top:2px}
+.breakdown{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.5rem}
+.brow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+.brow:last-child{border-bottom:none}
+.brow-k{color:var(--text2)}
+.brow-v{font-weight:500;color:var(--text)}
+.result-actions{display:flex;flex-direction:column;gap:8px}
+.btn-primary{width:100%;padding:14px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all var(--transition)}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{width:100%;padding:12px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:14px;cursor:pointer;font-family:var(--font-body);transition:all var(--transition)}
+.btn-secondary:hover{color:var(--text);border-color:var(--accent)}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="logo">TOEFL &amp; TOEIC <span>Practice</span></div>
+  <div class="topbar-right">
+    <button class="icon-btn" onclick="toggleTheme()" id="theme-icon" title="Toggle dark mode">☀️</button>
+    <button class="icon-btn" onclick="openDrawer()" title="Settings">⚙️</button>
+  </div>
+</div>
+
+<!-- Settings Drawer -->
+<div class="drawer-backdrop" id="backdrop" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-title">
+    Settings
+    <button class="close-btn" onclick="closeDrawer()">✕</button>
+  </div>
+
+  <div class="setting-group">
+    <div class="setting-label">Theme</div>
+    <div class="theme-row">
+      <button class="theme-btn active" id="btn-light" onclick="setTheme('light')">☀️ Light</button>
+      <button class="theme-btn" id="btn-dark" onclick="setTheme('dark')">🌙 Dark</button>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <div class="setting-label">Font</div>
+    <div class="font-grid" id="font-grid"></div>
+  </div>
+
+  <div class="setting-group">
+    <div class="setting-label"><span class="api-status" id="api-dot"></span>Gemini API Key</div>
+    <div class="api-field">
+      <input type="password" id="api-input" placeholder="AIza..." />
+      <button onclick="saveKey()">Simpan</button>
+    </div>
+    <div class="api-note">
+      Dapatkan API key <strong>gratis</strong> di <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>. Key disimpan hanya di browser kamu (localStorage), tidak dikirim ke mana pun kecuali Google.
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+
+  <!-- Home Screen -->
+  <div class="screen active" id="home-screen">
+    <div class="hero">
+      <h1 class="hero-title">Latihan TOEFL<br/>&amp; TOEIC</h1>
+      <p class="hero-sub">Soal dibuat otomatis oleh AI setiap sesi — selalu baru</p>
+    </div>
+
+    <div id="api-warn" class="api-warn">
+      ⚠️ Gemini API Key belum diset. Buka Settings (⚙️) untuk memasukkan API key gratis dari Google AI Studio.
+    </div>
+
+    <div class="section-title">Pilih jenis tes</div>
+    <div class="grid2">
+      <div class="test-card" onclick="selectTest('TOEFL',this)">
+        <div class="tc-name">TOEFL</div>
+        <div class="tc-desc">Academic English · IBT style</div>
+      </div>
+      <div class="test-card" onclick="selectTest('TOEIC',this)">
+        <div class="tc-name">TOEIC</div>
+        <div class="tc-desc">Business English · L&amp;R Test</div>
+      </div>
+    </div>
+
+    <div id="section-wrap" style="display:none">
+      <div class="section-title">Pilih section</div>
+      <div class="chips" id="section-chips"></div>
+    </div>
+
+    <div id="count-wrap" style="display:none">
+      <div class="section-title">Jumlah soal</div>
+      <div class="count-row">
+        <div class="chip selected" onclick="selectCount(5,this)">5 soal</div>
+        <div class="chip" onclick="selectCount(10,this)">10 soal</div>
+        <div class="chip" onclick="selectCount(15,this)">15 soal</div>
+      </div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startQuiz()" disabled>Mulai Latihan</button>
+  </div>
+
+  <!-- Loading Screen -->
+  <div class="screen" id="loading-screen">
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <div class="loading-text">AI sedang membuat soal...</div>
+      <div class="loading-sub">Proses ini memakan waktu 10–20 detik</div>
+    </div>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div class="screen" id="quiz-screen">
+    <div class="quiz-meta">
+      <span class="q-num" id="q-counter">Soal 1 dari 10</span>
+      <span class="timer-pill" id="timer">20:00</span>
+    </div>
+    <div class="progress"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="q-card">
+      <div class="q-tag" id="q-section"></div>
+      <div class="passage" id="q-passage" style="display:none"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="opts" id="opts"></div>
+      <div class="explanation" id="explanation"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()" disabled>Jawab dulu untuk lanjut</button>
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div class="screen" id="result-screen">
+    <div class="result-hero">
+      <div class="result-test" id="r-test"></div>
+      <div class="result-score" id="r-score"></div>
+      <div class="result-label" id="r-label"></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-n" id="r-benar"></div><div class="stat-l">Benar</div></div>
+      <div class="stat-box"><div class="stat-n" id="r-salah"></div><div class="stat-l">Salah</div></div>
+      <div class="stat-box"><div class="stat-n" id="r-waktu"></div><div class="stat-l">Waktu</div></div>
+    </div>
+    <div class="breakdown" id="r-breakdown"></div>
+    <div class="result-actions">
+      <button class="btn-primary" onclick="retryQuiz()">🔄 Coba Lagi (soal baru)</button>
+      <button class="btn-secondary" onclick="goHome()">← Kembali ke Beranda</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── FONTS ───────────────────────────────────────────────────────────────
+const FONTS = [
+  {name:'DM Sans',display:'DM Sans',family:"'DM Sans', sans-serif",display_family:"'DM Serif Display', serif",desc:'Modern · Clean'},
+  {name:'Outfit',display:'Outfit',family:"'Outfit', sans-serif",display_family:"'Playfair Display', serif",desc:'Geometric · Friendly'},
+  {name:'Figtree',display:'Figtree',family:"'Figtree', sans-serif",display_family:"'DM Serif Display', serif",desc:'Rounded · Soft'},
+  {name:'Plus Jakarta',display:'Plus Jakarta',family:"'Plus Jakarta Sans', sans-serif",display_family:"'Fraunces', serif",desc:'Elegant · Balanced'},
+  {name:'IBM Plex Mono',display:'IBM Mono',family:"'IBM Plex Mono', monospace",display_family:"'Syne', sans-serif",desc:'Mono · Techy'},
+  {name:'Literata',display:'Literata',family:"'Literata', serif",display_family:"'Syne', sans-serif",desc:'Editorial · Reading'},
+];
+let currentFont = 0;
+
+function initFontGrid(){
+  const grid = document.getElementById('font-grid');
+  grid.innerHTML = FONTS.map((f,i)=>`
+    <div class="font-card ${i===currentFont?'active':''}" onclick="setFont(${i})" style="font-family:${f.family}">
+      <div class="fn">${f.display}</div>
+      <div class="fd">${f.desc}</div>
+    </div>
+  `).join('');
+}
+function setFont(i){
+  currentFont = i;
+  const f = FONTS[i];
+  document.documentElement.style.setProperty('--font-body', f.family);
+  document.documentElement.style.setProperty('--font-display', f.display_family);
+  document.querySelectorAll('.font-card').forEach((c,j)=>c.classList.toggle('active',j===i));
+  localStorage.setItem('pref_font', i);
+}
+
+// ─── THEME ────────────────────────────────────────────────────────────────
+let isDark = false;
+function setTheme(t){
+  isDark = t==='dark';
+  document.documentElement.setAttribute('data-theme', isDark?'dark':'');
+  document.getElementById('theme-icon').textContent = isDark?'🌙':'☀️';
+  document.getElementById('btn-light').classList.toggle('active', !isDark);
+  document.getElementById('btn-dark').classList.toggle('active', isDark);
+  localStorage.setItem('pref_theme', t);
+}
+function toggleTheme(){setTheme(isDark?'light':'dark');}
+
+// ─── DRAWER ───────────────────────────────────────────────────────────────
+function openDrawer(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('backdrop').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('open');
+}
+
+// ─── API KEY ──────────────────────────────────────────────────────────────
+function saveKey(){
+  const v = document.getElementById('api-input').value.trim();
+  if(v){
+    localStorage.setItem('anthropic_key', v);
+    updateApiStatus();
+    document.getElementById('api-warn').style.display='none';
+    closeDrawer();
+    alert('API key tersimpan!');
+  }
+}
+function getKey(){return localStorage.getItem('anthropic_key')||'';}
+function updateApiStatus(){
+  const ok = !!getKey();
+  document.getElementById('api-dot').className = 'api-status '+(ok?'ok':'');
+  document.getElementById('api-input').value = getKey()?'••••••••••••••':'';
+}
+
+// ─── DATA ─────────────────────────────────────────────────────────────────
+const SECTIONS = {
+  TOEFL:['Reading','Listening','Speaking','Writing','Grammar & Vocabulary'],
+  TOEIC:['Reading Comprehension','Listening','Grammar','Vocabulary','Error Recognition']
+};
+let selectedTest='', selectedSection='', questionCount=5;
+let questions=[], currentQ=0, answers=[], timerInt=null, timeLeft=0, startTime=0, answered=false;
+
+// ─── UI HELPERS ───────────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function selectTest(t, el){
+  selectedTest=t; selectedSection='';
+  document.querySelectorAll('.test-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const chips=document.getElementById('section-chips');
+  chips.innerHTML=SECTIONS[t].map(s=>`<div class="chip" onclick="selectSection('${s}',this)">${s}</div>`).join('');
+  document.getElementById('section-wrap').style.display='block';
+  document.getElementById('count-wrap').style.display='none';
+  document.getElementById('start-btn').disabled=true;
+}
+
+function selectSection(s, el){
+  selectedSection=s;
+  document.querySelectorAll('#section-chips .chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('count-wrap').style.display='block';
+  updateStartBtn();
+}
+
+function selectCount(n, el){
+  questionCount=n;
+  document.querySelectorAll('.count-row .chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  updateStartBtn();
+}
+
+function updateStartBtn(){
+  const ok = selectedTest && selectedSection;
+  document.getElementById('start-btn').disabled = !ok;
+}
+
+// ─── QUIZ ─────────────────────────────────────────────────────────────────
+async function startQuiz(){
+  const key = getKey();
+  if(!key){
+    openDrawer();
+    return;
+  }
+  showScreen('loading-screen');
+  questions=[]; currentQ=0; answers=[];
+  try{
+    const prompt=`You are a ${selectedTest} exam expert. Generate exactly ${questionCount} multiple-choice practice questions for the "${selectedSection}" section of the ${selectedTest} exam.
+
+Return ONLY a valid JSON array, no markdown, no preamble. Format:
+[{"section":"${selectedSection}","passage":"short reading/dialogue text if needed, else empty string","question":"the question text","options":["A. ...","B. ...","C. ...","D. ..."],"answer":0,"explanation":"brief explanation of the correct answer"}]
+
+Rules: answer is the 0-based index of the correct option. For reading/listening include a 3-5 sentence passage/dialogue. For grammar/vocabulary passage can be empty. Authentic ${selectedTest} difficulty. All text in English. Return ONLY the JSON array.`;
+
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:4000}})
+    });
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'API error');}
+    const data=await res.json();
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const idx=clean.indexOf('[');
+    questions=JSON.parse(clean.slice(idx));
+    if(!Array.isArray(questions)||questions.length===0)throw new Error('No questions returned');
+    startTime=Date.now();
+    timeLeft=questionCount*120;
+    renderQuestion();
+    startTimer();
+    showScreen('quiz-screen');
+  }catch(e){
+    showScreen('home-screen');
+    alert('Gagal membuat soal: '+e.message+'\n\nPastikan Gemini API key valid dan coba lagi.');
+  }
+}
+
+function renderQuestion(){
+  const q=questions[currentQ];
+  answered=false;
+  document.getElementById('q-counter').textContent=`Soal ${currentQ+1} dari ${questions.length}`;
+  document.getElementById('progress-fill').style.width=`${(currentQ/questions.length)*100}%`;
+  document.getElementById('q-section').textContent=q.section;
+  const pass=document.getElementById('q-passage');
+  if(q.passage){pass.textContent=q.passage;pass.style.display='block';}
+  else{pass.style.display='none';}
+  document.getElementById('q-text').textContent=q.question;
+  document.getElementById('explanation').style.display='none';
+  const opts=document.getElementById('opts');
+  opts.innerHTML=q.options.map((o,i)=>`<button class="opt" onclick="pickAnswer(${i},this)">${o}</button>`).join('');
+  const nb=document.getElementById('next-btn');
+  nb.disabled=true; nb.textContent='Jawab dulu untuk lanjut';
+}
+
+function pickAnswer(idx,el){
+  if(answered)return;
+  answered=true;
+  const q=questions[currentQ];
+  document.querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.answer)b.classList.add('correct');
+    else if(i===idx)b.classList.add('wrong');
+  });
+  answers.push({correct:idx===q.answer, section:q.section});
+  const exp=document.getElementById('explanation');
+  exp.innerHTML=`<strong>Penjelasan:</strong> ${q.explanation}`;
+  exp.style.display='block';
+  const nb=document.getElementById('next-btn');
+  nb.disabled=false;
+  nb.textContent=currentQ<questions.length-1?'Soal berikutnya →':'Lihat hasil →';
+}
+
+function nextQuestion(){
+  currentQ++;
+  if(currentQ>=questions.length){endQuiz();return;}
+  renderQuestion();
+}
+
+function startTimer(){
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    timeLeft--;
+    const m=Math.floor(timeLeft/60),s=timeLeft%60;
+    const el=document.getElementById('timer');
+    el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    el.className='timer-pill'+(timeLeft<60?' urgent':'');
+    if(timeLeft<=0){clearInterval(timerInt);endQuiz();}
+  },1000);
+}
+
+function endQuiz(){
+  clearInterval(timerInt);
+  const correct=answers.filter(a=>a.correct).length;
+  const total=answers.length;
+  const pct=total>0?Math.round((correct/total)*100):0;
+  const elapsed=Math.round((Date.now()-startTime)/1000);
+  const mins=Math.floor(elapsed/60),secs=elapsed%60;
+
+  let score,label;
+  if(selectedTest==='TOEFL'){score=Math.round(pct*1.2);label=`Estimasi skor TOEFL: ${score} / 120`;}
+  else{score=Math.round(pct*9.9);label=`Estimasi skor TOEIC: ${score} / 990`;}
+
+  const pred=pct>=80?'Sangat Baik ✦':pct>=60?'Cukup':'Perlu Latihan Lagi';
+
+  document.getElementById('r-test').textContent=`${selectedTest} · ${selectedSection}`;
+  document.getElementById('r-score').textContent=score;
+  document.getElementById('r-label').textContent=label;
+  document.getElementById('r-benar').textContent=correct;
+  document.getElementById('r-salah').textContent=total-correct;
+  document.getElementById('r-waktu').textContent=`${mins}m ${String(secs).padStart(2,'0')}s`;
+  document.getElementById('r-breakdown').innerHTML=`
+    <div class="brow"><span class="brow-k">Akurasi</span><span class="brow-v">${pct}%</span></div>
+    <div class="brow"><span class="brow-k">Soal dijawab</span><span class="brow-v">${total} / ${questions.length}</span></div>
+    <div class="brow"><span class="brow-k">Predikat</span><span class="brow-v">${pred}</span></div>
+  `;
+  showScreen('result-screen');
+}
+
+function retryQuiz(){startQuiz();}
+function goHome(){clearInterval(timerInt);showScreen('home-screen');}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+(function init(){
+  const savedTheme=localStorage.getItem('pref_theme')||'light';
+  setTheme(savedTheme);
+  const savedFont=parseInt(localStorage.getItem('pref_font')||'0');
+  currentFont=savedFont;
+  initFontGrid();
+  setFont(savedFont);
+  updateApiStatus();
+  if(!getKey()){document.getElementById('api-warn').style.display='block';}
+})();
+</script>
+<footer style="text-align:center;padding:2rem 1.5rem 1.5rem;border-top:1px solid var(--border);margin-top:2rem">
+  <p style="font-size:12px;color:var(--text3);letter-spacing:.02em">
+    <span style="font-family:var(--font-display);font-size:13px;color:var(--text2)">Dinodino Studio</span>
+    <span style="margin:0 8px;color:var(--border2)">×</span>
+    <span style="font-family:var(--font-display);font-size:13px;color:var(--text2)">Dinodino Learn</span>
+  </p>
+</footer>
+</body>
+</html>
