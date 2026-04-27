@@ -150,6 +150,22 @@ a{color:var(--accent)}
 .next-btn:hover:not(:disabled){background:var(--bg2);border-color:var(--accent);color:var(--accent-text)}
 .next-btn:disabled{opacity:.4;cursor:not-allowed}
 
+/* Mode cards */
+.mode-card{padding:1.25rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all var(--transition);text-align:center}
+.mode-card:hover{border-color:var(--border2);background:var(--bg2)}
+.mode-card.selected{border-color:var(--accent);background:var(--accent-bg)}
+.mode-icon{font-size:24px;margin-bottom:6px}
+.mode-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+.mode-desc{font-size:12px;color:var(--text2);line-height:1.4}
+/* Sim info box */
+.sim-info-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:13px}
+.sim-info-box .sim-title{font-weight:500;color:var(--text);margin-bottom:.5rem;font-size:14px}
+.sim-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);color:var(--text2)}
+.sim-row:last-child{border-bottom:none}
+.sim-row span:last-child{font-weight:500;color:var(--text)}
+/* Section progress in full sim */
+.section-progress{font-size:12px;color:var(--accent-text);background:var(--accent-bg);padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:.75rem}
+
 /* Listening TTS */
 .listen-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem;text-align:center}
 .listen-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
@@ -241,29 +257,53 @@ a{color:var(--accent)}
     </div>
 
     <div class="section-title">Pilih jenis tes</div>
-    <div class="grid2">
-      <div class="test-card" onclick="selectTest('TOEFL',this)">
-        <div class="tc-name">TOEFL</div>
-        <div class="tc-desc">Academic English · IBT style</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.5rem">
+      <div class="test-card" onclick="selectTest('TOEFL_IBT',this)">
+        <div class="tc-name">TOEFL iBT</div>
+        <div class="tc-desc">Internet-based · Skor 0–120</div>
+      </div>
+      <div class="test-card" onclick="selectTest('TOEFL_ITP',this)">
+        <div class="tc-name">TOEFL ITP</div>
+        <div class="tc-desc">Institutional · Skor 310–677</div>
       </div>
       <div class="test-card" onclick="selectTest('TOEIC',this)">
         <div class="tc-name">TOEIC</div>
-        <div class="tc-desc">Business English · L&amp;R Test</div>
+        <div class="tc-desc">Business English · Skor 10–990</div>
       </div>
     </div>
 
+    <!-- Mode Selection -->
+    <div id="mode-wrap" style="display:none">
+      <div class="section-title">Pilih mode latihan</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem">
+        <div class="mode-card" id="mode-section" onclick="selectMode('section',this)">
+          <div class="mode-icon">📝</div>
+          <div class="mode-name">Per Section</div>
+          <div class="mode-desc">Pilih section tertentu & jumlah soal sendiri</div>
+        </div>
+        <div class="mode-card" id="mode-full" onclick="selectMode('full',this)">
+          <div class="mode-icon">🎯</div>
+          <div class="mode-name">Simulasi Penuh</div>
+          <div class="mode-desc">Semua section, waktu & jumlah soal mendekati tes asli</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Per Section options -->
     <div id="section-wrap" style="display:none">
       <div class="section-title">Pilih section</div>
       <div class="chips" id="section-chips"></div>
-    </div>
-
-    <div id="count-wrap" style="display:none">
-      <div class="section-title">Jumlah soal</div>
+      <div class="section-title" style="margin-top:.5rem">Jumlah soal</div>
       <div class="count-row">
         <div class="chip selected" onclick="selectCount(5,this)">5 soal</div>
         <div class="chip" onclick="selectCount(10,this)">10 soal</div>
         <div class="chip" onclick="selectCount(15,this)">15 soal</div>
       </div>
+    </div>
+
+    <!-- Simulasi Penuh info -->
+    <div id="sim-info" style="display:none">
+      <div class="sim-info-box" id="sim-info-box"></div>
     </div>
 
     <button class="start-btn" id="start-btn" onclick="startQuiz()" disabled>Mulai Latihan</button>
@@ -286,6 +326,7 @@ a{color:var(--accent)}
     </div>
     <div class="progress"><div class="progress-fill" id="progress-fill"></div></div>
     <div class="q-card">
+      <div id="sim-section-label" class="section-progress" style="display:none"></div>
       <div class="q-tag" id="q-section"></div>
       <div id="listen-box" class="listen-box" style="display:none">
         <div class="listen-label">🎧 Dengarkan audio terlebih dahulu</div>
@@ -408,11 +449,87 @@ function updateApiStatus(){
 
 // ─── DATA ─────────────────────────────────────────────────────────────────
 const SECTIONS = {
-  TOEFL:['Reading','Listening','Speaking','Writing','Grammar & Vocabulary'],
-  TOEIC:['Reading Comprehension','Listening','Grammar','Vocabulary','Error Recognition']
+  TOEFL_IBT: ['Reading','Listening','Speaking','Writing','Grammar & Vocabulary'],
+  TOEFL_ITP: ['Listening Comprehension','Structure & Written Expression','Reading Comprehension','Vocabulary'],
+  TOEIC:     ['Reading Comprehension','Listening','Grammar','Vocabulary','Error Recognition']
 };
-let selectedTest='', selectedSection='', questionCount=5;
+
+// Scoring config per test
+const SCORE_CONFIG = {
+  TOEFL_IBT: {
+    label: 'TOEFL iBT',
+    min: 0, max: 120,
+    calc: pct => Math.round(pct * 1.2),
+    levels: [
+      {min:114, max:120, grade:'C1–C2', label:'Advanced', color:'#0f6e56', desc:'Sangat fasih — setara native speaker'},
+      {min:95,  max:113, grade:'B2+',   label:'Upper-Intermediate', color:'#185FA5', desc:'Skor kuat untuk universitas top dunia'},
+      {min:72,  max:94,  grade:'B2',    label:'Intermediate-High', color:'#185FA5', desc:'Diterima kebanyakan universitas internasional'},
+      {min:42,  max:71,  grade:'B1',    label:'Intermediate', color:'#a85514', desc:'Perlu peningkatan untuk akademis'},
+      {min:0,   max:41,  grade:'A2–',   label:'Elementary', color:'#a32d2d', desc:'Perlu latihan intensif'},
+    ]
+  },
+  TOEFL_ITP: {
+    label: 'TOEFL ITP',
+    min: 310, max: 677,
+    calc: pct => Math.round(310 + pct * 3.67),
+    levels: [
+      {min:627, max:677, grade:'C1',  label:'Advanced', color:'#0f6e56', desc:'Sangat kuat untuk akademis'},
+      {min:550, max:626, grade:'B2+', label:'Upper-Intermediate', color:'#185FA5', desc:'Kuat untuk keperluan akademis dan beasiswa'},
+      {min:480, max:549, grade:'B2',  label:'Intermediate-High', color:'#185FA5', desc:'Cukup untuk sebagian besar program'},
+      {min:420, max:479, grade:'B1',  label:'Intermediate', color:'#a85514', desc:'Perlu ditingkatkan untuk keperluan akademis'},
+      {min:310, max:419, grade:'A2',  label:'Elementary', color:'#a32d2d', desc:'Perlu latihan intensif'},
+    ]
+  },
+  TOEIC: {
+    label: 'TOEIC L&R',
+    min: 10, max: 990,
+    calc: pct => Math.round(10 + pct * 9.8),
+    levels: [
+      {min:905, max:990, grade:'C1',  label:'Proficient', color:'#0f6e56', desc:'Sangat fasih dalam lingkungan profesional'},
+      {min:785, max:904, grade:'B2',  label:'Advanced Working', color:'#185FA5', desc:'Mampu berkomunikasi bisnis secara efektif'},
+      {min:605, max:784, grade:'B1',  label:'Intermediate', color:'#185FA5', desc:'Dapat bekerja dalam lingkungan berbahasa Inggris'},
+      {min:405, max:604, grade:'A2',  label:'Elementary', color:'#a85514', desc:'Kemampuan dasar, perlu peningkatan'},
+      {min:10,  max:404, grade:'A1',  label:'Beginner', color:'#a32d2d', desc:'Perlu latihan intensif'},
+    ]
+  }
+};
+let selectedTest='', selectedSection='', questionCount=5, quizMode='section';
 let questions=[], currentQ=0, answers=[], timerInt=null, timeLeft=0, startTime=0, answered=false;
+
+// Simulation config: sections with q count and time (minutes) per test
+const SIM_CONFIG = {
+  TOEFL_IBT: {
+    totalTime: 60,
+    sections: [
+      {name:'Reading', count:10},
+      {name:'Listening', count:10},
+      {name:'Grammar & Vocabulary', count:10},
+      {name:'Writing', count:5},
+    ],
+    desc:'4 section · 35 soal · 60 menit'
+  },
+  TOEFL_ITP: {
+    totalTime: 55,
+    sections: [
+      {name:'Listening Comprehension', count:10},
+      {name:'Structure & Written Expression', count:10},
+      {name:'Reading Comprehension', count:10},
+      {name:'Vocabulary', count:5},
+    ],
+    desc:'4 section · 35 soal · 55 menit'
+  },
+  TOEIC: {
+    totalTime: 60,
+    sections: [
+      {name:'Listening', count:10},
+      {name:'Reading Comprehension', count:10},
+      {name:'Grammar', count:8},
+      {name:'Vocabulary', count:7},
+      {name:'Error Recognition', count:5},
+    ],
+    desc:'5 section · 40 soal · 60 menit'
+  }
+};
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────────
 function showScreen(id){
@@ -421,77 +538,97 @@ function showScreen(id){
 }
 
 function selectTest(t, el){
-  selectedTest=t; selectedSection='';
+  selectedTest=t; selectedSection=''; quizMode='';
   document.querySelectorAll('.test-card').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
-  const chips=document.getElementById('section-chips');
-  chips.innerHTML=SECTIONS[t].map(s=>`<div class="chip" onclick="selectSection('${s}',this)">${s}</div>`).join('');
-  document.getElementById('section-wrap').style.display='block';
-  document.getElementById('count-wrap').style.display='none';
+  // Show mode selection
+  document.getElementById('mode-wrap').style.display='block';
+  document.getElementById('section-wrap').style.display='none';
+  document.getElementById('sim-info').style.display='none';
+  document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));
   document.getElementById('start-btn').disabled=true;
+}
+
+function selectMode(mode, el){
+  quizMode=mode;
+  document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+
+  if(mode==='section'){
+    // Show section chips
+    const chips=document.getElementById('section-chips');
+    chips.innerHTML=SECTIONS[selectedTest].map(s=>`<div class="chip" onclick="selectSection('${s}',this)">${s}</div>`).join('');
+    document.getElementById('section-wrap').style.display='block';
+    document.getElementById('sim-info').style.display='none';
+    document.getElementById('start-btn').disabled=true;
+    selectedSection='';
+  } else {
+    // Show sim info
+    document.getElementById('section-wrap').style.display='none';
+    const sim=SIM_CONFIG[selectedTest];
+    const rows=sim.sections.map(s=>`<div class="sim-row"><span>${s.name}</span><span>${s.count} soal</span></div>`).join('');
+    document.getElementById('sim-info-box').innerHTML=`
+      <div class="sim-title">🎯 Detail Simulasi ${SCORE_CONFIG[selectedTest].label}</div>
+      ${rows}
+      <div class="sim-row"><span>Total waktu</span><span>${sim.totalTime} menit</span></div>
+      <div class="sim-row"><span>Total soal</span><span>${sim.sections.reduce((a,s)=>a+s.count,0)} soal</span></div>
+    `;
+    document.getElementById('sim-info').style.display='block';
+    document.getElementById('start-btn').disabled=false;
+    document.getElementById('start-btn').textContent='Mulai Simulasi';
+  }
 }
 
 function selectSection(s, el){
   selectedSection=s;
   document.querySelectorAll('#section-chips .chip').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
-  document.getElementById('count-wrap').style.display='block';
-  updateStartBtn();
+  document.getElementById('start-btn').disabled=false;
+  document.getElementById('start-btn').textContent='Mulai Latihan';
 }
 
 function selectCount(n, el){
   questionCount=n;
   document.querySelectorAll('.count-row .chip').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
-  updateStartBtn();
-}
-
-function updateStartBtn(){
-  const ok = selectedTest && selectedSection;
-  document.getElementById('start-btn').disabled = !ok;
 }
 
 // ─── QUIZ ─────────────────────────────────────────────────────────────────
 async function startQuiz(){
   const key = getKey();
-  if(!key){
-    openDrawer();
-    return;
-  }
+  if(!key){ openDrawer(); return; }
   showScreen('loading-screen');
   questions=[]; currentQ=0; answers=[];
+
   try{
-    const sectionInstructions = {
-      'Error Recognition': `For Error Recognition questions: write a sentence with exactly 4 underlined parts labeled (A), (B), (C), (D) in the question field like: "She (A) go to (B) the market (C) every (D) day." — one part contains a grammatical error. The options must be exactly: ["A", "B", "C", "D"]. The answer is the index of the letter containing the error.`,
-      'Grammar': `For Grammar questions: provide a sentence with a blank and 4 options to fill it correctly.`,
-      'Grammar & Vocabulary': `For Grammar & Vocabulary questions: mix sentence completion and vocabulary-in-context questions.`,
-      'Incomplete Sentences': `For Incomplete Sentences: provide a sentence with a blank and 4 options.`,
-    };
-    const extraInstruction = sectionInstructions[selectedSection] || '';
+    const testLabel = SCORE_CONFIG[selectedTest].label;
 
-    const prompt=`You are a ${selectedTest} exam expert. Generate exactly ${questionCount} multiple-choice practice questions for the "${selectedSection}" section of the ${selectedTest} exam.
+    if(quizMode==='full'){
+      // Simulasi penuh: generate semua section sekaligus
+      const sim = SIM_CONFIG[selectedTest];
+      const allSections = sim.sections;
+      document.querySelector('.loading-text').textContent='AI membuat soal simulasi...';
+      document.querySelector('.loading-sub').textContent=`Menyiapkan ${allSections.length} section — harap tunggu`;
 
-${extraInstruction}
+      // Generate per section sequentially
+      for(let i=0;i<allSections.length;i++){
+        const sec=allSections[i];
+        document.querySelector('.loading-sub').textContent=`Menyiapkan section ${i+1}/${allSections.length}: ${sec.name}...`;
+        const qs = await generateQuestions(key, testLabel, sec.name, sec.count);
+        questions.push(...qs);
+      }
+      timeLeft = SIM_CONFIG[selectedTest].totalTime * 60;
+      document.getElementById('sim-section-label').style.display='inline-block';
+    } else {
+      // Per section
+      const qs = await generateQuestions(key, testLabel, selectedSection, questionCount);
+      questions.push(...qs);
+      timeLeft = questionCount * 120;
+      document.getElementById('sim-section-label').style.display='none';
+    }
 
-Return ONLY a valid JSON array, no markdown, no preamble. Format:
-[{"section":"${selectedSection}","passage":"short reading/dialogue text if needed, else empty string","question":"the question text","options":["A. ...","B. ...","C. ...","D. ..."],"answer":0,"explanation":"penjelasan singkat dalam Bahasa Indonesia mengapa jawaban tersebut benar"}]
-
-Rules: answer is the 0-based index of the correct option. For reading/listening include a 3-5 sentence passage/dialogue. For grammar/vocabulary passage can be empty. Authentic ${selectedTest} difficulty. Questions and options in English, explanation in Bahasa Indonesia. Return ONLY the JSON array.`;
-
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
-      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:4000,temperature:0.7,messages:[{role:'user',content:prompt}]})
-    });
-    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'API error');}
-    const data=await res.json();
-    const raw=data.choices?.[0]?.message?.content||'';
-    const clean=raw.replace(/```json|```/g,'').trim();
-    const idx=clean.indexOf('[');
-    questions=JSON.parse(clean.slice(idx));
-    if(!Array.isArray(questions)||questions.length===0)throw new Error('No questions returned');
+    if(questions.length===0) throw new Error('No questions returned');
     startTime=Date.now();
-    timeLeft=questionCount*120;
     renderQuestion();
     startTimer();
     showScreen('quiz-screen');
@@ -499,6 +636,37 @@ Rules: answer is the 0-based index of the correct option. For reading/listening 
     showScreen('home-screen');
     alert('Gagal membuat soal: '+e.message+'\n\nPastikan Groq API key valid dan coba lagi.');
   }
+}
+
+async function generateQuestions(key, testLabel, section, count){
+  const sectionInstructions = {
+    'Error Recognition': `For Error Recognition questions: write a sentence with exactly 4 underlined parts labeled (A), (B), (C), (D) in the question field like: "She (A) go to (B) the market (C) every (D) day." — one part contains a grammatical error. The options must be exactly: ["A", "B", "C", "D"]. The answer is the index of the letter containing the error.`,
+    'Grammar': `For Grammar questions: provide a sentence with a blank and 4 options to fill it correctly.`,
+    'Grammar & Vocabulary': `For Grammar & Vocabulary questions: mix sentence completion and vocabulary-in-context questions.`,
+    'Structure & Written Expression': `For Structure & Written Expression: mix sentence completion and error identification questions.`,
+    'Incomplete Sentences': `For Incomplete Sentences: provide a sentence with a blank and 4 options.`,
+  };
+  const extraInstruction = sectionInstructions[section] || '';
+  const prompt=`You are a ${testLabel} exam expert. Generate exactly ${count} multiple-choice practice questions for the "${section}" section of the ${testLabel} exam.
+
+${extraInstruction}
+
+Return ONLY a valid JSON array, no markdown, no preamble. Format:
+[{"section":"${section}","passage":"short reading/dialogue text if needed, else empty string","question":"the question text","options":["A. ...","B. ...","C. ...","D. ..."],"answer":0,"explanation":"penjelasan singkat dalam Bahasa Indonesia mengapa jawaban tersebut benar"}]
+
+Rules: answer is the 0-based index of the correct option. For reading/listening include a 3-5 sentence passage/dialogue. For grammar/vocabulary passage can be empty. Authentic ${testLabel} difficulty. Questions and options in English, explanation in Bahasa Indonesia. Return ONLY the JSON array.`;
+
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+    body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:4000,temperature:0.7,messages:[{role:'user',content:prompt}]})
+  });
+  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'API error');}
+  const data=await res.json();
+  const raw=data.choices?.[0]?.message?.content||'';
+  const clean=raw.replace(/```json|```/g,'').trim();
+  const idx=clean.indexOf('[');
+  return JSON.parse(clean.slice(idx));
 }
 
 function renderQuestion(){
@@ -509,15 +677,28 @@ function renderQuestion(){
   document.getElementById('progress-fill').style.width=`${(currentQ/questions.length)*100}%`;
   document.getElementById('q-section').textContent=q.section;
 
-  const isListening = q.section==='Listening';
+  // Show section label in sim mode
+  if(quizMode==='full'){
+    const sim=SIM_CONFIG[selectedTest];
+    let cumulative=0, secIdx=0;
+    for(let i=0;i<sim.sections.length;i++){
+      cumulative+=sim.sections[i].count;
+      if(currentQ<cumulative){secIdx=i;break;}
+    }
+    const lbl=document.getElementById('sim-section-label');
+    lbl.textContent=`Section ${secIdx+1}/${sim.sections.length}: ${sim.sections[secIdx].name}`;
+    lbl.style.display='inline-block';
+  } else {
+    document.getElementById('sim-section-label').style.display='none';
+  }
+
+  const isListening = q.section==='Listening' || q.section==='Listening Comprehension';
   const isErrRec = q.section==='Error Recognition';
 
-  // Passage: hide for Listening (audio instead), show for others
   const pass=document.getElementById('q-passage');
   if(q.passage && !isListening){pass.textContent=q.passage;pass.style.display='block';}
   else{pass.style.display='none';}
 
-  // TTS box
   const listenBox=document.getElementById('listen-box');
   const lockedHint=document.getElementById('q-locked-hint');
   const questionArea=document.getElementById('q-question-area');
@@ -526,6 +707,7 @@ function renderQuestion(){
     lockedHint.style.display='block';
     questionArea.classList.add('q-locked');
     document.getElementById('tts-play-btn').style.display='inline-flex';
+    document.getElementById('tts-play-btn').textContent='▶ Putar Audio';
     document.getElementById('tts-stop-btn').style.display='none';
     document.getElementById('tts-note').textContent='Putar audio sebelum menjawab soal';
     ttsText = q.passage;
@@ -651,22 +833,44 @@ function endQuiz(){
   const elapsed=Math.round((Date.now()-startTime)/1000);
   const mins=Math.floor(elapsed/60),secs=elapsed%60;
 
-  let score,label;
-  if(selectedTest==='TOEFL'){score=Math.round(pct*1.2);label=`Estimasi skor TOEFL: ${score} / 120`;}
-  else{score=Math.round(pct*9.9);label=`Estimasi skor TOEIC: ${score} / 990`;}
+  const cfg = SCORE_CONFIG[selectedTest];
+  const score = cfg.calc(pct);
+  const clampedScore = Math.max(cfg.min, Math.min(cfg.max, score));
 
-  const pred=pct>=80?'Sangat Baik ✦':pct>=60?'Cukup':'Perlu Latihan Lagi';
+  // Find level
+  const lvl = cfg.levels.find(l => clampedScore >= l.min && clampedScore <= l.max) || cfg.levels[cfg.levels.length-1];
 
-  document.getElementById('r-test').textContent=`${selectedTest} · ${selectedSection}`;
-  document.getElementById('r-score').textContent=score;
-  document.getElementById('r-label').textContent=label;
+  document.getElementById('r-test').textContent= quizMode==='full'
+    ? `${cfg.label} · Simulasi Penuh`
+    : `${cfg.label} · ${selectedSection}`;
+  document.getElementById('r-score').textContent=clampedScore;
+  document.getElementById('r-label').textContent=`Estimasi skor ${cfg.label}: ${clampedScore} / ${cfg.max}`;
   document.getElementById('r-benar').textContent=correct;
   document.getElementById('r-salah').textContent=total-correct;
   document.getElementById('r-waktu').textContent=`${mins}m ${String(secs).padStart(2,'0')}s`;
+
+  // Score bar
+  const barPct = Math.round(((clampedScore - cfg.min) / (cfg.max - cfg.min)) * 100);
+
   document.getElementById('r-breakdown').innerHTML=`
-    <div class="brow"><span class="brow-k">Akurasi</span><span class="brow-v">${pct}%</span></div>
+    <div class="brow"><span class="brow-k">Akurasi jawaban</span><span class="brow-v">${pct}%</span></div>
     <div class="brow"><span class="brow-k">Soal dijawab</span><span class="brow-v">${total} / ${questions.length}</span></div>
-    <div class="brow"><span class="brow-k">Predikat</span><span class="brow-v">${pred}</span></div>
+    <div class="brow"><span class="brow-k">Range skor ${cfg.label}</span><span class="brow-v">${cfg.min} – ${cfg.max}</span></div>
+    <div class="brow">
+      <span class="brow-k">Level CEFR</span>
+      <span class="brow-v" style="color:${lvl.color}">${lvl.grade} · ${lvl.label}</span>
+    </div>
+    <div style="padding:10px 0 4px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:6px">
+        <span>${cfg.min}</span><span style="font-weight:500;color:${lvl.color}">${clampedScore}</span><span>${cfg.max}</span>
+      </div>
+      <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${barPct}%;background:${lvl.color};border-radius:4px;transition:width .6s ease"></div>
+      </div>
+    </div>
+    <div style="padding:8px 10px;background:var(--bg2);border-radius:var(--radius-sm);margin-top:8px;font-size:13px;color:var(--text2)">
+      💡 ${lvl.desc}
+    </div>
   `;
   showScreen('result-screen');
 }
