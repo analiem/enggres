@@ -1,0 +1,196 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Google Fonts (all options preloaded) ───────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500&family=Figtree:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400&family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;700&family=Literata:opsz,wght@7..72,300;7..72,400&family=Nunito:wght@300;400;500&family=Lora:wght@400;500&family=Poppins:wght@300;400;500&family=Source+Sans+3:wght@300;400;500&display=swap');
+
+/* ── CSS variables ──────────────────────────────────────────────────── */
+:root {
+  --bg:        #f8f7f4;
+  --bg2:       #f0ede8;
+  --bg3:       #e8e4de;
+  --surface:   #ffffff;
+  --border:    rgba(0,0,0,0.10);
+  --border2:   rgba(0,0,0,0.18);
+  --text:      #1a1916;
+  --text2:     #6b6760;
+  --text3:     #9e9b96;
+  --accent:    #1a56db;
+  --accent-bg: #eff4ff;
+  --accent-tx: #1a56db;
+  --success:   #0f6e56;
+  --success-bg:#e1f5ee;
+  --danger:    #a32d2d;
+  --danger-bg: #fcebeb;
+  --radius:    12px;
+  --radius-sm: 8px;
+  --tr:        0.18s ease;
+}
+
+.dark {
+  --bg:        #0f0f0d;
+  --bg2:       #1a1916;
+  --bg3:       #232320;
+  --surface:   #1a1916;
+  --border:    rgba(255,255,255,0.08);
+  --border2:   rgba(255,255,255,0.14);
+  --text:      #f0ede8;
+  --text2:     #9e9b96;
+  --text3:     #6b6760;
+  --accent:    #5b8dee;
+  --accent-bg: #1a2340;
+  --accent-tx: #91b4f7;
+  --success:   #1d9e75;
+  --success-bg:#0a2a1e;
+  --danger:    #d85a5a;
+  --danger-bg: #2a0f0f;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  font-size: 15px;
+  line-height: 1.6;
+  transition: background-color var(--tr), color var(--tr);
+}
+
+/* ── Utility classes ─────────────────────────────────────────────────── */
+.font-display { font-family: var(--font-display, 'DM Serif Display', serif); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+
+.chip {
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text2);
+  transition: all var(--tr);
+  user-select: none;
+}
+.chip:hover  { border-color: var(--border2); color: var(--text); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--tr);
+  font-family: inherit;
+}
+.btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.btn-primary:disabled { background: var(--bg3); color: var(--text3); cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  width: 100%;
+  padding: 11px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--tr);
+  font-family: inherit;
+}
+.btn-secondary:hover { color: var(--text); border-color: var(--accent); }
+
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2);
+  font-size: 15px;
+  transition: all var(--tr);
+}
+.icon-btn:hover { border-color: var(--border2); color: var(--text); }
+
+/* ── Option buttons ──────────────────────────────────────────────────── */
+.opt-btn {
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+  background: var(--bg2);
+  transition: all var(--tr);
+  display: flex; gap: 10px; align-items: flex-start;
+  font-family: inherit;
+  line-height: 1.5;
+  width: 100%;
+}
+.opt-btn:hover:not(:disabled) { border-color: var(--border2); background: var(--bg3); }
+.opt-btn:disabled { cursor: default; }
+.opt-btn.correct { border-color: var(--success); background: var(--success-bg); color: var(--success); }
+.opt-btn.wrong   { border-color: var(--danger);  background: var(--danger-bg);  color: var(--danger);  }
+
+/* ── Progress bar ─────────────────────────────────────────────────────── */
+.progress-track { height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.progress-fill  { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+
+/* ── Spinner ─────────────────────────────────────────────────────────── */
+.spinner {
+  width: 32px; height: 32px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Passage quote ────────────────────────────────────────────────────── */
+.passage-box {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.75;
+  background: var(--bg2);
+  border-left: 2.5px solid var(--accent);
+  padding: 0.875rem 1rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-style: italic;
+}
+
+/* ── Locked overlay ──────────────────────────────────────────────────── */
+.q-locked { opacity: 0.3; pointer-events: none; user-select: none; }
+
+/* ── Drawer ──────────────────────────────────────────────────────────── */
+.drawer-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  backdrop-filter: blur(2px);
+}
+.drawer {
+  position: fixed; top: 0; right: 0;
+  width: 360px; max-width: 100vw;
+  height: 100vh;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 201;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
