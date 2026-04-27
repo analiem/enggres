@@ -150,6 +150,19 @@ a{color:var(--accent)}
 .next-btn:hover:not(:disabled){background:var(--bg2);border-color:var(--accent);color:var(--accent-text)}
 .next-btn:disabled{opacity:.4;cursor:not-allowed}
 
+/* Listening TTS */
+.listen-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem;text-align:center}
+.listen-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.listen-controls{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.tts-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:20px;border:1px solid var(--accent);background:var(--accent-bg);color:var(--accent-text);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all var(--transition)}
+.tts-btn:hover{background:var(--accent);color:#fff}
+.tts-btn.playing{background:var(--accent);color:#fff}
+.tts-btn:disabled{opacity:.5;cursor:not-allowed}
+.tts-speed{padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.tts-note{font-size:11px;color:var(--text3);margin-top:8px}
+.q-locked{opacity:.35;pointer-events:none;user-select:none}
+.unlock-hint{font-size:12px;color:var(--text3);text-align:center;margin-bottom:1rem;font-style:italic}
+
 /* Results */
 .result-hero{text-align:center;padding:1.5rem 0 2rem}
 .result-test{font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:.5rem}
@@ -274,9 +287,25 @@ a{color:var(--accent)}
     <div class="progress"><div class="progress-fill" id="progress-fill"></div></div>
     <div class="q-card">
       <div class="q-tag" id="q-section"></div>
+      <div id="listen-box" class="listen-box" style="display:none">
+        <div class="listen-label">🎧 Dengarkan audio terlebih dahulu</div>
+        <div class="listen-controls">
+          <button class="tts-btn" id="tts-play-btn" onclick="ttsPlay()">▶ Putar Audio</button>
+          <button class="tts-btn" id="tts-stop-btn" onclick="ttsStop()" style="display:none">⏹ Stop</button>
+          <select class="tts-speed" id="tts-speed" title="Kecepatan">
+            <option value="0.7">Lambat</option>
+            <option value="0.9" selected>Normal</option>
+            <option value="1.1">Cepat</option>
+          </select>
+        </div>
+        <div class="tts-note" id="tts-note">Putar audio sebelum menjawab soal</div>
+      </div>
       <div class="passage" id="q-passage" style="display:none"></div>
-      <div class="q-text" id="q-text"></div>
-      <div class="opts" id="opts"></div>
+      <div id="q-locked-hint" class="unlock-hint" style="display:none">▲ Putar audio dulu untuk membuka soal</div>
+      <div id="q-question-area">
+        <div class="q-text" id="q-text"></div>
+        <div class="opts" id="opts"></div>
+      </div>
       <div class="explanation" id="explanation"></div>
       <button class="next-btn" id="next-btn" onclick="nextQuestion()" disabled>Jawab dulu untuk lanjut</button>
     </div>
@@ -475,18 +504,44 @@ Rules: answer is the 0-based index of the correct option. For reading/listening 
 function renderQuestion(){
   const q=questions[currentQ];
   answered=false;
+  ttsStop();
   document.getElementById('q-counter').textContent=`Soal ${currentQ+1} dari ${questions.length}`;
   document.getElementById('progress-fill').style.width=`${(currentQ/questions.length)*100}%`;
   document.getElementById('q-section').textContent=q.section;
+
+  const isListening = q.section==='Listening';
+  const isErrRec = q.section==='Error Recognition';
+
+  // Passage: hide for Listening (audio instead), show for others
   const pass=document.getElementById('q-passage');
-  if(q.passage){pass.textContent=q.passage;pass.style.display='block';}
+  if(q.passage && !isListening){pass.textContent=q.passage;pass.style.display='block';}
   else{pass.style.display='none';}
+
+  // TTS box
+  const listenBox=document.getElementById('listen-box');
+  const lockedHint=document.getElementById('q-locked-hint');
+  const questionArea=document.getElementById('q-question-area');
+  if(isListening && q.passage){
+    listenBox.style.display='block';
+    lockedHint.style.display='block';
+    questionArea.classList.add('q-locked');
+    document.getElementById('tts-play-btn').style.display='inline-flex';
+    document.getElementById('tts-stop-btn').style.display='none';
+    document.getElementById('tts-note').textContent='Putar audio sebelum menjawab soal';
+    ttsText = q.passage;
+    ttsUnlocked = false;
+  } else {
+    listenBox.style.display='none';
+    lockedHint.style.display='none';
+    questionArea.classList.remove('q-locked');
+    ttsUnlocked = true;
+  }
+
   document.getElementById('q-text').textContent=q.question;
   document.getElementById('explanation').style.display='none';
-  const isErrRec = q.section==='Error Recognition';
+
   const opts=document.getElementById('opts');
   if(isErrRec){
-    // Show A B C D as 2x2 grid buttons
     opts.style.display='grid';
     opts.style.gridTemplateColumns='1fr 1fr';
     opts.innerHTML=q.options.map((o,i)=>`<button class="opt" style="justify-content:center;font-size:16px;font-weight:500;" onclick="pickAnswer(${i},this)">${o}</button>`).join('');
@@ -495,8 +550,61 @@ function renderQuestion(){
     opts.style.gridTemplateColumns='';
     opts.innerHTML=q.options.map((o,i)=>`<button class="opt" onclick="pickAnswer(${i},this)">${o}</button>`).join('');
   }
+
   const nb=document.getElementById('next-btn');
   nb.disabled=true; nb.textContent='Jawab dulu untuk lanjut';
+}
+
+// ─── TTS ──────────────────────────────────────────────────────────────────
+let ttsText = '', ttsUnlocked = false, ttsUtterance = null;
+
+function ttsPlay(){
+  if(!ttsText) return;
+  ttsStop();
+  const rate = parseFloat(document.getElementById('tts-speed').value);
+  ttsUtterance = new SpeechSynthesisUtterance(ttsText);
+  ttsUtterance.lang = 'en-US';
+  ttsUtterance.rate = rate;
+  // Try to pick a good English voice
+  const voices = speechSynthesis.getVoices();
+  const enVoice = voices.find(v=>v.lang==='en-US'&&v.name.includes('Google'))
+    || voices.find(v=>v.lang==='en-US')
+    || voices.find(v=>v.lang.startsWith('en'));
+  if(enVoice) ttsUtterance.voice = enVoice;
+
+  ttsUtterance.onstart = ()=>{
+    document.getElementById('tts-play-btn').style.display='none';
+    document.getElementById('tts-stop-btn').style.display='inline-flex';
+    document.getElementById('tts-note').textContent='Sedang memutar audio...';
+  };
+  ttsUtterance.onend = ()=>{
+    document.getElementById('tts-play-btn').style.display='inline-flex';
+    document.getElementById('tts-stop-btn').style.display='none';
+    document.getElementById('tts-play-btn').textContent='🔁 Putar Ulang';
+    document.getElementById('tts-note').textContent='Audio selesai — sekarang jawab pertanyaannya';
+    if(!ttsUnlocked) unlockQuestion();
+  };
+  ttsUtterance.onerror = ()=>{
+    document.getElementById('tts-play-btn').style.display='inline-flex';
+    document.getElementById('tts-stop-btn').style.display='none';
+    document.getElementById('tts-note').textContent='Gagal memutar — klik untuk coba lagi';
+    unlockQuestion();
+  };
+  speechSynthesis.speak(ttsUtterance);
+}
+
+function ttsStop(){
+  speechSynthesis.cancel();
+  const pb = document.getElementById('tts-play-btn');
+  const sb = document.getElementById('tts-stop-btn');
+  if(pb) pb.style.display='inline-flex';
+  if(sb) sb.style.display='none';
+}
+
+function unlockQuestion(){
+  ttsUnlocked = true;
+  document.getElementById('q-question-area').classList.remove('q-locked');
+  document.getElementById('q-locked-hint').style.display='none';
 }
 
 function pickAnswer(idx,el){
@@ -564,7 +672,7 @@ function endQuiz(){
 }
 
 function retryQuiz(){startQuiz();}
-function goHome(){clearInterval(timerInt);showScreen('home-screen');}
+function goHome(){clearInterval(timerInt);ttsStop();showScreen('home-screen');}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
 (function init(){
