@@ -109,12 +109,12 @@ export function useQuiz() {
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : ''
         const isRateLimit = msg.toLowerCase().includes('rate') || msg.includes('429') || msg.includes('TPM')
-        if (isRateLimit && attempt <= 3) {
+        if (isRateLimit && attempt <= 4) {
           dispatch({
             type: 'SET_LOADING_PROGRESS',
-            payload: { done: -1, total: -1, message: `Rate limit — auto retry ${attempt}/3...` },
+            payload: { done: -1, total: -1, message: `Rate limit — auto retry ${attempt}/4...` },
           })
-          await delayWithCountdown(15)
+          await delayWithCountdown(30)
           return generateWithRetry(testLabel, section, count, attempt + 1)
         }
         throw err
@@ -131,7 +131,7 @@ export function useQuiz() {
     const cfg = SCORE_CONFIG[state.selectedTest]
     const allQuestions: Question[] = []
     const BATCH_SIZE = 10
-    const DELAY_SECS = 8
+    const DELAY_SECS = 15  // safe cooldown: ~4 batch/min = 6000 TPM (50% of limit)
 
     try {
       if (state.quizMode === 'full') {

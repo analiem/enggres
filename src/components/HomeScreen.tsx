@@ -165,7 +165,7 @@ export function HomeScreen() {
                   marginTop: 10, padding: '8px 10px', background: 'var(--bg2)',
                   borderRadius: 'var(--radius-sm)', fontSize: 12, color: 'var(--text3)', lineHeight: 1.5,
                 }}>
-                  ⏳ Simulasi penuh memerlukan waktu loading 2–5 menit untuk generate semua soal. Pastikan koneksi stabil.
+                  ⏳ Simulasi penuh memerlukan waktu loading 4–8 menit. Cooldown 15 detik antar batch untuk menghindari rate limit. Pastikan koneksi stabil dan jangan tutup tab.
                 </div>
               )}
             </div>
