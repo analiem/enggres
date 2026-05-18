@@ -48,8 +48,8 @@ Strict rules:
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 4096,
+        model: 'llama-3.1-8b-instant',
+        max_tokens: 2048,
         temperature: 0.7,
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -57,8 +57,10 @@ Strict rules:
 
     if (!response.ok) {
       const err = await response.json()
+      const msg = err.error?.message ?? 'Groq API error'
+      const isRateLimit = response.status === 429 || msg.toLowerCase().includes('rate')
       return NextResponse.json(
-        { error: err.error?.message ?? 'Groq API error' },
+        { error: isRateLimit ? `rate limit: ${msg}` : msg },
         { status: response.status }
       )
     }

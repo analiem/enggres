@@ -26,6 +26,10 @@ export interface AppState {
   timeLeft: number
   startTime: number
   loadingMessage: string
+  loadingProgress: number   // 0–100
+  loadingTotal: number      // total batches
+  loadingDone: number       // batches completed
+  loadingCountdown: number  // seconds remaining in delay
 
   // TTS
   ttsPlaying: boolean
@@ -48,6 +52,10 @@ const initialState: AppState = {
   timeLeft: 0,
   startTime: 0,
   loadingMessage: 'AI sedang membuat soal...',
+  loadingProgress: 0,
+  loadingTotal: 0,
+  loadingDone: 0,
+  loadingCountdown: 0,
   ttsPlaying: false,
   ttsUnlocked: false,
 }
@@ -66,6 +74,8 @@ type Action =
   | { type: 'SET_SCREEN'; payload: AppState['screen'] }
   | { type: 'SET_QUESTIONS'; payload: Question[] }
   | { type: 'SET_LOADING_MSG'; payload: string }
+  | { type: 'SET_LOADING_PROGRESS'; payload: { done: number; total: number; message: string } }
+  | { type: 'SET_LOADING_COUNTDOWN'; payload: number }
   | { type: 'START_QUIZ'; payload: { questions: Question[]; timeLeft: number } }
   | { type: 'ANSWER'; payload: { correct: boolean; section: string } }
   | { type: 'NEXT_QUESTION' }
@@ -95,6 +105,20 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, screen: action.payload }
     case 'SET_LOADING_MSG':
       return { ...state, loadingMessage: action.payload }
+    case 'SET_LOADING_PROGRESS':
+      if (action.payload.done === -1) {
+        // Retry signal — only update message, keep existing progress
+        return { ...state, loadingMessage: action.payload.message }
+      }
+      return {
+        ...state,
+        loadingDone: action.payload.done,
+        loadingTotal: action.payload.total,
+        loadingProgress: Math.round((action.payload.done / action.payload.total) * 100),
+        loadingMessage: action.payload.message,
+      }
+    case 'SET_LOADING_COUNTDOWN':
+      return { ...state, loadingCountdown: action.payload }
     case 'START_QUIZ':
       return {
         ...state,

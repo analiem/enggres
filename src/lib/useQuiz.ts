@@ -71,7 +71,7 @@ export function useQuiz() {
     [dispatch, ttsStop]
   )
 
-  // ── Generate questions ────────────────────────────────────────────────────
+  // ── Generate questions (base) ─────────────────────────────────────────────
 
   const generateQuestions = useCallback(
     async (testLabel: string, section: string, count: number): Promise<Question[]> => {
@@ -87,6 +87,42 @@ export function useQuiz() {
     [state.apiKey]
   )
 
+  // ── Delay helper ─────────────────────────────────────────────────────────
+
+  const delayWithCountdown = useCallback(
+    async (seconds: number) => {
+      for (let i = seconds; i > 0; i--) {
+        dispatch({ type: 'SET_LOADING_COUNTDOWN', payload: i })
+        await new Promise((r) => setTimeout(r, 1000))
+      }
+      dispatch({ type: 'SET_LOADING_COUNTDOWN', payload: 0 })
+    },
+    [dispatch]
+  )
+
+  // ── Generate with auto-retry on rate limit ────────────────────────────────
+
+  const generateWithRetry = useCallback(
+    async (testLabel: string, section: string, count: number, attempt = 1): Promise<Question[]> => {
+      try {
+        return await generateQuestions(testLabel, section, count)
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : ''
+        const isRateLimit = msg.toLowerCase().includes('rate') || msg.includes('429') || msg.includes('TPM')
+        if (isRateLimit && attempt <= 3) {
+          dispatch({
+            type: 'SET_LOADING_PROGRESS',
+            payload: { done: -1, total: -1, message: `Rate limit — auto retry ${attempt}/3...` },
+          })
+          await delayWithCountdown(15)
+          return generateWithRetry(testLabel, section, count, attempt + 1)
+        }
+        throw err
+      }
+    },
+    [generateQuestions, dispatch, delayWithCountdown]
+  )
+
   // ── Start quiz ────────────────────────────────────────────────────────────
 
   const startQuiz = useCallback(async () => {
@@ -94,36 +130,67 @@ export function useQuiz() {
     dispatch({ type: 'SET_SCREEN', payload: 'loading' })
     const cfg = SCORE_CONFIG[state.selectedTest]
     const allQuestions: Question[] = []
+    const BATCH_SIZE = 10
+    const DELAY_SECS = 8
 
     try {
       if (state.quizMode === 'full') {
         const variant = getSimVariant(state.selectedTest, state.simVariant)
         const secs = variant.sections
-        for (let i = 0; i < secs.length; i++) {
-          const sec = secs[i]
-          dispatch({
-            type: 'SET_LOADING_MSG',
-            payload: `Section ${i + 1}/${secs.length}: ${sec.name} (${sec.count} soal)...`,
-          })
-          // Split large sections into batches of 25 to stay within token limits
-          const batchSize = 25
-          for (let offset = 0; offset < sec.count; offset += batchSize) {
-            const batchCount = Math.min(batchSize, sec.count - offset)
+
+        const totalBatches = secs.reduce(
+          (acc, s) => acc + Math.ceil(s.count / BATCH_SIZE),
+          0
+        )
+        let batchesDone = 0
+
+        for (let si = 0; si < secs.length; si++) {
+          const sec = secs[si]
+          const numBatches = Math.ceil(sec.count / BATCH_SIZE)
+
+          for (let b = 0; b < numBatches; b++) {
+            const offset = b * BATCH_SIZE
+            const batchCount = Math.min(BATCH_SIZE, sec.count - offset)
+
             dispatch({
-              type: 'SET_LOADING_MSG',
-              payload: `Section ${i + 1}/${secs.length}: ${sec.name} — soal ${offset + 1}–${offset + batchCount}...`,
+              type: 'SET_LOADING_PROGRESS',
+              payload: {
+                done: batchesDone,
+                total: totalBatches,
+                message: `Section ${si + 1}/${secs.length}: ${sec.name} — soal ${offset + 1}–${offset + batchCount}`,
+              },
             })
-            const qs = await generateQuestions(cfg.label, sec.name, batchCount)
+
+            const qs = await generateWithRetry(cfg.label, sec.name, batchCount)
             allQuestions.push(...qs)
+            batchesDone++
+
+            dispatch({
+              type: 'SET_LOADING_PROGRESS',
+              payload: {
+                done: batchesDone,
+                total: totalBatches,
+                message: `Section ${si + 1}/${secs.length}: ${sec.name} — soal ${offset + 1}–${offset + batchCount}`,
+              },
+            })
+
+            // Cooldown between batches — skip after last batch
+            if (batchesDone < totalBatches) {
+              await delayWithCountdown(DELAY_SECS)
+            }
           }
         }
+
         dispatch({
           type: 'START_QUIZ',
           payload: { questions: allQuestions, timeLeft: variant.totalTime * 60 },
         })
       } else {
-        dispatch({ type: 'SET_LOADING_MSG', payload: 'AI sedang membuat soal...' })
-        const qs = await generateQuestions(cfg.label, state.selectedSection, state.questionCount)
+        dispatch({
+          type: 'SET_LOADING_PROGRESS',
+          payload: { done: 0, total: 1, message: 'AI sedang membuat soal...' },
+        })
+        const qs = await generateWithRetry(cfg.label, state.selectedSection, state.questionCount)
         dispatch({
           type: 'START_QUIZ',
           payload: { questions: qs, timeLeft: state.questionCount * 120 },
@@ -135,7 +202,7 @@ export function useQuiz() {
       dispatch({ type: 'SET_SCREEN', payload: 'home' })
       alert(`Gagal membuat soal: ${msg}\n\nPastikan Groq API key valid dan coba lagi.`)
     }
-  }, [state, dispatch, generateQuestions, startTimer])
+  }, [state, dispatch, generateWithRetry, startTimer, delayWithCountdown])
 
   // ── Answer & navigate ─────────────────────────────────────────────────────
 
