@@ -114,7 +114,7 @@ export function useQuiz() {
             type: 'SET_LOADING_PROGRESS',
             payload: { done: -1, total: -1, message: `Rate limit — auto retry ${attempt}/4...` },
           })
-          await delayWithCountdown(30)
+          await delayWithCountdown(40)
           return generateWithRetry(testLabel, section, count, attempt + 1)
         }
         throw err
@@ -130,8 +130,8 @@ export function useQuiz() {
     dispatch({ type: 'SET_SCREEN', payload: 'loading' })
     const cfg = SCORE_CONFIG[state.selectedTest]
     const allQuestions: Question[] = []
-    const BATCH_SIZE = 10
-    const DELAY_SECS = 15  // safe cooldown: ~4 batch/min = 6000 TPM (50% of limit)
+    const BATCH_SIZE = 5   // smaller batch = smaller output = no JSON truncation
+    const DELAY_SECS = 20  // ~3 batch/min = ~4500 TPM (37% of limit, very safe)
 
     try {
       if (state.quizMode === 'full') {

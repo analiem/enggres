@@ -137,9 +137,9 @@ export default function Page() {
             {/* Estimated time */}
             <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text3)' }}>
               {state.quizMode === 'full' && state.simVariant === 'full'
-                ? '⏳ Simulasi penuh: estimasi 4–8 menit'
+                ? '⏳ Simulasi penuh: estimasi 8–15 menit'
                 : state.quizMode === 'full'
-                ? '⏳ Simulasi mini: estimasi 2–4 menit'
+                ? '⏳ Simulasi mini: estimasi 4–8 menit'
                 : '⏳ Estimasi 10–20 detik'}
             </div>
           </div>
